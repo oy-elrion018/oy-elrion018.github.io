@@ -174,7 +174,7 @@ const main = () => {
       if (document.visibilityState === "visible") {
         goAppStore(isIos, isAndroid);
       }
-    }, 500);
+    }, 2000);
   } else {
     // 앱이 필수로 설치되어야 하는 경우가 아닌 경우
     // 브릿지페이지는 1초 뒤 가시성이 확인되면 리다이렉트 URL로 이동
