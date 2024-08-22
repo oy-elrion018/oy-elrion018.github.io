@@ -136,7 +136,6 @@ const main = () => {
 
   // 앱에서 실행되는 경우
   // redirect URL로 이동한다.
-
   if (isApp) {
     location.replace(redirectUrl);
 
@@ -145,15 +144,18 @@ const main = () => {
 
   // ma 서브도메인인 경우 동작하지않음 (중복 동작 방지)
   // m 도메인으로 이동 후 동작
-  if (checkSubDomainMa(location.href)) {
-    return;
-  }
+  // github page에선 임시로 주석처리
+  // if (checkSubDomainMa(location.href)) {
+  //   return;
+  // }
 
   // PC 브라우저에서 실행되는 경우
   // redirect URL로 이동한다.
   // 해당 분기 아래 코드는 모바일 웹에서만 동작한다.
   if (isPcBrowser) {
     location.replace(replaceSubdomain(redirectUrl));
+
+    return;
   }
 
   // 스택스크린임을 알리는 파라미터를 추가하여 리다이렉트 URL로 스택스크린을 연다.
@@ -181,7 +183,7 @@ const main = () => {
       if (document.visibilityState === "visible") {
         goAppStore(isIos, isAndroid);
       }
-    }, 1000);
+    }, 1500);
   } else {
     // 앱이 필수로 설치되어야 하는 경우가 아닌 경우
     // 브릿지페이지는 1초 뒤 가시성이 확인되면 리다이렉트 URL로 이동
