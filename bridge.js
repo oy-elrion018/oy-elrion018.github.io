@@ -4,15 +4,14 @@ const KEYS = {
   IS_APP_REQUIRED: "isAppRequired",
 };
 
-const STACK_SCREEN_PAGES = [
-  { path: "/m/mtn/magazine/editorial/", type: "magazineEditorial" },
-  { path: "/m/mtn/magazine/weekly-magazine", type: "magazineWeekly" },
-];
-
 window.addEventListener("DOMContentLoaded", () => {
   main();
 });
 
+/**
+ * 주어진 URL의 서브도메인을 변경하는 함수
+ * https://maqa.oliveyoung.com/... -> https://mqa.oliveyoung.com/...
+ */
 const replaceSubdomain = (url) => {
   return url.replace(/https:\/\/(maqa|ma)\./, (match, p1) => {
     return `https://${p1 === "ma" ? "m" : p1}.`;
@@ -58,6 +57,15 @@ const goAppStore = (isIos, isAndroid) => {
       "https://play.google.com/store/apps/details?id=com.oliveyoung&hl=ko"
     );
   }
+};
+
+/**
+ * 현재 PC 브라우저로 접속중인지 확인하는 함수
+ */
+const checkIsPcBrowser = () => {
+  return !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
 };
 
 /**
@@ -113,12 +121,13 @@ const checkIsAndroidMobileChromeBrowser = () => {
 
 const main = () => {
   const { isApp, isIos, isAndroid } = getAppInfo();
+  const isPcBrowser = checkIsPcBrowser();
 
   // redirect URL 및 stackScreenType을 URL 쿼리스트링으로 받아온다.
   const params = new URLSearchParams(window.location.search);
   const redirectUrl = params.get(KEYS.REDIRECT_URL);
   const stackScreenType = params.get(KEYS.STACK_SCREEN_TYPE);
-  const isAppRequired = params.get(KEYS.IS_APP_REQUIRED);
+  const isAppRequired = params.get(KEYS.IS_APP_REQUIRED) === "true";
 
   // redirect URL이 없다면 아무것도 하지 않는다.
   if (!redirectUrl) {
@@ -127,7 +136,7 @@ const main = () => {
 
   // 앱에서 실행되는 경우
   // redirect URL로 이동한다.
-  // 해당 분기 아래 코드는 모바일 웹에서만 동작한다.
+
   if (isApp) {
     location.replace(redirectUrl);
 
@@ -140,21 +149,19 @@ const main = () => {
     return;
   }
 
+  // PC 브라우저에서 실행되는 경우
+  // redirect URL로 이동한다.
+  // 해당 분기 아래 코드는 모바일 웹에서만 동작한다.
+  if (isPcBrowser) {
+    location.replace(replaceSubdomain(redirectUrl));
+  }
+
   // 스택스크린임을 알리는 파라미터를 추가하여 리다이렉트 URL로 스택스크린을 연다.
   const secondParams = new URLSearchParams({
-    ...(KEYS.STACK_SCREEN_TYPE && stackScreenType
-      ? {
-          [KEYS.STACK_SCREEN_TYPE]: stackScreenType,
-        }
-      : (() => {
-          const targetPage = STACK_SCREEN_PAGES.find((page) =>
-            redirectUrl.includes(page.path)
-          );
-
-          return targetPage
-            ? { [KEYS.STACK_SCREEN_TYPE]: targetPage.type }
-            : {};
-        })()),
+    ...(KEYS.STACK_SCREEN_TYPE &&
+      stackScreenType && {
+        [KEYS.STACK_SCREEN_TYPE]: stackScreenType,
+      }),
   });
 
   // 올리브영 앱으로 이동
